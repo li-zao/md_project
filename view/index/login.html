@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title> {$Think.config.app.app_name} </title>
+		<link rel="stylesheet" href="/layui/css/layui.css">
+		<link rel="stylesheet" href="/dist/css/font-awesome.min.css">
+		<style>
+			body{
+				background-image: url("/static/images/background.jpg");
+				background-position: center center;
+				background-size: cover;
+				background-repeat: no-repeat;
+				background-attachment: fixed;
+			}
+			.loginForm{
+				width: 350px;
+				height: 300px;
+				background-color: white;
+				padding: 30px 20px;
+				margin-top: 50%;
+				border-radius: 5px;
+				box-shadow: 0 0 5px black;
+				box-sizing: border-box;
+			}
+		</style>
+	</head>
+	<body class="layui-layout-body">
+
+		<div class="layui-container">
+			<div class="layui-row">
+				<div class="layui-col-md4 layui-col-md-offset4">
+					<div class="loginForm">
+						<h2 align="center">{$Think.config.app.app_name}</h2>
+						<form class="layui-form" id="loginForm">
+							<div class="layui-form-item">
+								<label>用户名:</label>
+								<div class="layui-form-block">
+									<input type="text" name="username" required lay-verify="required"
+									placeholder="请输入用户名" class="layui-input">
+								</div>
+							</div>
+
+							<div class="layui-form-item">
+								<label>密码:</label>
+								<div class="layui-form-block">
+									<input type="password" name="password" required lay-verify="required"
+									placeholder="请输入密码" class="layui-input">
+								</div>
+							</div>
+
+							<div class="layui-form-item">
+								<div class="layui-form-block" style="float:right">
+									<button class="layui-btn" lay-submit lay-filter="loginForm">登录</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			layui.use(['layer', 'form'], function () {
+	            var layer = layui.layer;
+	            var form = layui.form;
+
+	            form.on('submit(loginForm)', function (data) {
+	                // submit login data
+          	    	$.ajax({ 
+        	            type : "POST",
+        	            data : $('#loginForm').serialize(),
+        	            url : "/index/dologin/",
+        	            success : function(result) {
+        	            	result = $.parseJSON(result)
+        	            	if (result.res == 1) {
+			            		window.location.href = 'index';
+			            	} else {
+			            		layer.msg(result.msg)
+			            	}
+        	            }
+        		   	});
+
+	                return false;
+	            })
+	        })
+		</script>
+	</body>
+</html>

@@ -1,0 +1,130 @@
+{extend  name="layout" /}
+{block name="breadcrumb"}
+	<a href="">项目跟踪</a>
+	<a><cite>定制清单</cite></a>
+{/block}
+
+{block name="content"}
+<div class="layui-col-md12">
+		<div class="layui-collapse">
+			<div class="layui-colla-item">
+				<h2 class="layui-colla-title"><i class="fa fa-search"></i> 检索</h2>
+				<div class="layui-colla-content" style="padding:0">
+					<table class="layui-table layui-form" style="margin:0">
+						<colgroup>
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col>
+						</colgroup>
+						<tbody>
+							<tr>
+								<td>邮件主题</td>
+								<td>
+									<input type="text" class="layui-input" id="searchSubject">
+								</td>
+								<td>邮件标记</td>
+								<td>
+									<input type="text" class="layui-input" id="searchTag">
+								</td>
+								<td>预期结果</td>
+								<td>
+									<select name="searchExpected" lay-search>
+										<option value=""></option>
+									</select>
+								</td>
+								<td>扫描结果</td>
+								<td>
+									<select name="searchActual" lay-search>
+										<option value=""></option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>上传人</td>
+								<td>
+									<select name="searchUploader" lay-search>
+										<option value=""></option>
+									</select>
+								</td>
+								<td>上传时间</td>
+								<td>
+									<input type="text" name="searchUploadtime" id="searchUploadtime" lay-verify="searchUploadtime" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+								</td>
+								<td colspan="4">
+									<button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="resetBtn" style="float:right">重置</button>
+									<button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="searchBtn" style="float:right;margin-right:10px">查询</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-col-md12">
+		<table class="layui-hide" id="data_table" lay-filter="data_table"></table>
+	</div>
+
+	<!-- 行工具栏 -->
+	<script type="text/html" id="bar">
+		<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+	</script>
+
+	<!-- 头部工具栏 -->
+	<script type="text/html" id="toolbar">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-sm" lay-event="bulkDownload">btn1</button>
+			<button class="layui-btn layui-btn-sm" lay-event="bulkDelete">btn2</button>
+		</div>
+	</script>
+{/block}
+
+{block name="js"}
+	<script>
+		var laydate = layui.laydate
+		var table = layui.table;
+		var form = layui.form
+
+		$(function(){
+			$('#searchBtn').click(function(){
+				// 检索条件用
+				var title = '';
+
+				table.reload("data_table", {
+					url: '/custom/list/', //数据接口
+					where: {
+						title: title,
+					},
+					page: {
+						curr: 1 //重新从第 1 页开始
+					}
+				})
+			})
+
+			$('#resetBtn').click(function(){
+				window.location.href = "/custom"
+			})
+		})
+
+		// table 展示
+		table.render({
+			elem: '#data_table',
+			height: '600',
+			toolbar: '#toolbar', //开启头部工具栏，并为其绑定左侧模板
+			url: '/custom/list/', //数据接口
+			page: true, //开启分页
+			cols: [[ //表头
+				{type:'checkbox'},
+				{field: 'cId', title: '序号', width:'5%'},
+				{fixed: 'right', title:'操作', toolbar: '#bar'}
+			]]
+		});
+	</script>
+{/block}

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="/layui/css/layui.css">
+	<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/xm-select.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+	.layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table[lay-even] tr:nth-child(even) {
+	    background-color: transparent;
+	}
+
+	td {
+		word-break:keep-all;/* 不换行 */
+		white-space:nowrap;/* 不换行 */
+		overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */
+		text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	}
+</style>
+<body style="padding:10px 10px 10px 10px">
+	<div class="layui-container" style="width:100%">
+		<form id="pjForm" lay-filter="pjForm" class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<label class="layui-form-label">所属项目</label>
+				<div class="layui-input-block">
+					<div id="pfId" style="width:100%"></div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<div class="layui-block">
+					<label class="layui-form-label">问题分类</label>
+					<div class="layui-input-block">
+						{foreach $configProjectType as $eachStatus => $eachName } 
+							<input type="radio" name="pType" value="{$eachStatus}" title="{$eachName}" lay-filter="filter-pType">
+						{/foreach}
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">问题标题</label>
+				<div class="layui-input-block">
+					<input type="text" name="pTitle" autocomplete="off" placeholder="请输入标题" class="layui-input" lay-verify="required">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">负责人</label>
+				<div class="layui-input-block">
+					<select name="pnId" id="" lay-search>
+						<option value=""></option>
+						{foreach $dbUsers as $uId => $uName } 
+							<option value="{$uId}">{$uName}</option>
+						{/foreach}
+					</select>
+				</div>
+			</div>
+
+			<div class="layui-form-item layui-form-text">
+				<label class="layui-form-label">问题描述</label>
+				<div class="layui-input-block">
+					<textarea placeholder="请输入问题描述（选填）" name="pContent" class="layui-textarea"></textarea>
+				</div>
+			</div>
+				
+			<!-- BUG相关 -->
+			<fieldset class="layui-elem-field" id="bug-form">
+				<legend>
+					BUG
+				</legend>
+				<div class="layui-field-box">
+					<div class="layui-form-item">
+						<label class="layui-form-label">当前状态</label>
+						<div class="layui-input-block">
+							<select name="bugStatus">
+								<option value="0">未开始</option>
+								<option value="1">处理中</option>
+								<option value="2">已解决</option>
+								<option value="3">未解决</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="layui-form-item">
+						<div class="layui-inline">
+							<label class="layui-form-label">BUG来源</label>
+							<div class="layui-input-inline">
+								<input type="radio" name="bugFrom" value="0" title="产品">
+								<input type="radio" name="bugFrom" value="1" title="定制">
+							</div>
+						</div>
+
+						<div class="layui-inline">
+							<label class="layui-form-label">并入产品</label>
+							<div class="layui-input-inline">
+								<input type="radio" name="bugIn" value="0" title="否">
+								<input type="radio" name="bugIn" value="1" title="是">
+							</div>
+						</div>
+
+						<div class="layui-inline">
+							<label class="layui-form-label">交付时间</label>
+							<div class="layui-input-inline">
+								<input type="text" name="bugDate" id="bugDate" lay-verify="bugDate" placeholder="实际交付时间" autocomplete="off" class="layui-input">
+							</div>
+						</div>
+					</div>
+
+					<div class="layui-form-item layui-form-text">
+						<label class="layui-form-label">开发方案</label>
+						<div class="layui-input-block">
+							<textarea placeholder="请输入开发具体方案" name="bugContent" class="layui-textarea"></textarea>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+
+			<!-- 环境配置相关 -->
+			<fieldset class="layui-elem-field" id="config-form">
+				<legend>
+					环境配置
+				</legend>
+				<div class="layui-field-box">
+					<div class="layui-form-item">
+						<label class="layui-form-label">当前状态</label>
+						<div class="layui-input-block">
+							<select name="configStatus">
+								<option value="10">未开始</option>
+								<option value="11">处理中</option>
+								<option value="12">已解决</option>
+								<option value="13">未解决</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="layui-form-item layui-form-text">
+						<label class="layui-form-label">开发备注</label>
+						<div class="layui-input-block">
+							<textarea placeholder="" name="configContent" class="layui-textarea"></textarea>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+
+
+			<!-- 评估相关 -->
+			<fieldset class="layui-elem-field" id="custom-form">
+				<legend>
+					定制开发
+				</legend>
+				<div class="layui-field-box">
+					<div class="layui-form-item">
+						<label class="layui-form-label">当前状态</label>
+						<div class="layui-input-block">
+							<select name="customStatus">
+								<option value="20">待评估</option>
+								<option value="21">开发中</option>
+								<option value="22">待交付</option>
+								<option value="23">已交付</option>
+								<option value="24">驳回</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="layui-form-item">
+						<div class="layui-inline">
+							<label class="layui-form-label">开发评估</label>
+							<div class="layui-input-inline">
+								<input type="text" name="customDays" autocomplete="off" class="layui-input" placeholder="开发所需时间，单位（人天）">
+							</div>
+						</div>
+
+						<div class="layui-inline">
+							<label class="layui-form-label">并入产品</label>
+							<div class="layui-input-inline">
+								<input type="radio" name="customIn" value="0" title="否">
+								<input type="radio" name="customIn" value="1" title="是">
+							</div>
+						</div>
+
+						<div class="layui-inline">
+							<label class="layui-form-label">交付时间</label>
+							<div class="layui-input-inline">
+								<input type="text" name="customDate" id="customDate" lay-verify="customDate" placeholder="实际交付时间" autocomplete="off" class="layui-input">
+							</div>
+						</div>
+					</div>
+
+					<div class="layui-form-item layui-form-text">
+						<label class="layui-form-label">开发方案</label>
+						<div class="layui-input-block">
+							<textarea placeholder="请输入开发具体方案" name="customContent" class="layui-textarea"></textarea>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+
+			<input type="hidden" name="pId" id="hidden-pId" value="">
+		</form>
+	</div>
+</body>
+
+<script>
+	var form = layui.form;
+	var laydate = layui.laydate
+	var xm = reloadProject_xm(JSON.parse('{$profilesInfos|raw}'));
+	var defaultPtype = 0;
+
+	// form数据初始化
+	{if !empty($projectInfo)}
+		// 禁止修改类型
+		$('input[name="pType"').attr('disabled', 'disabled')
+
+		form.val("pjForm", {
+			pId: '{$projectInfo["pId"]}',
+			pTitle: '{$projectInfo["pTitle"]}',
+			pType: '{$projectInfo["pType"]}',
+			pnId: '{$projectInfo["pNowUID"]}',
+			pContent: '{$projectInfo["pContent"]}',
+
+			// bug相关
+			bugStatus: '{$projectInfo["pStatus"]}',
+			bugFrom: '{$projectInfo["subValue"]}',
+			bugIn: '{$projectInfo["subIn"]}',
+			bugDate: '{$projectInfo["subDate"]}',
+			bugContent: '{$projectInfo["subContent"]}',
+
+			// 环境配置
+			configStatus: '{$projectInfo["pStatus"]}',
+			configContent: '{$projectInfo["subContent"]}',
+
+			// 定制相关
+			customStatus: '{$projectInfo["pStatus"]}',
+			customDays: '{$projectInfo["subValue"]}',
+			customIn: '{$projectInfo["subIn"]}',
+			customDate: '{$projectInfo["subDate"]}',
+			customContent: '{$projectInfo["subContent"]}',
+		})
+
+		changeSubFormStatus({$projectInfo["pType"]});
+	{else/}
+		$('input[name="pType"][value='+defaultPtype+']').prop('checked','checked');
+		changeSubFormStatus(defaultPtype);
+	{/if}
+
+	// 时间插件
+	laydate.render({
+		elem: '#customDate'
+	});
+	laydate.render({
+		elem: '#bugDate'
+	});
+
+	function reloadProject_xm(profileData) {
+		return xmSelect.render({
+			el: '#pfId',
+			language: 'zn',
+			filterable: 'true',
+			name: 'pfId',
+			{if !empty($projectInfo)}
+			disabled: true,
+			{/if}
+			data: profileData,
+			tips: '请选择所属用户&产品',
+			searchTips: '请选择所属用户&产品',
+			radio: true,
+			clickClose: true,
+			create: function(val, list){
+				return {
+					name: '没找到? 点击创建新项目',
+					value: 'none'
+				}
+			},
+			on: function(arr) {
+				if (arr['arr'].length > 0) {
+					if (arr['arr'][0]['value'] == 'none') {
+						var layer = layui.layer;      
+						layer.open({
+							title: '新增项目',
+							type: 2, 
+							area: ['420px', '350px'],
+							content: '/dialog/profile'
+						});
+					}
+					return 
+				}
+			},
+			model: {
+				icon: 'hidden',
+			},
+		})
+	}
+
+	// 根据问题类型，修改二级form显示、隐藏。add全隐藏，update按需显示
+	function changeSubFormStatus(pType) {
+		$('#custom-form, #bug-form, #config-form').hide();
+		
+		if ($('#hidden-pId').val() == "") {
+			return;
+		}
+
+		if (pType == 0) {
+			$('#bug-form').show()
+		} else if (pType == 1) {
+			$('#config-form').show()
+		} else if (pType == 2) {
+			$('#custom-form').show();
+		} else if (pType == 3) {
+
+		}
+	}
+
+	$(function(){
+		// 自动拼接显示名称
+		form.on('radio(filter-pType)', function(data){
+			changeSubFormStatus(data.value)
+		});
+
+		// 渲染form
+		form.render();
+	})
+</script>

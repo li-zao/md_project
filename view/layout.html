@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title> {$Think.config.app.app_name} </title>
+		<link rel="stylesheet" href="/layui/css/layui.css">
+		<link rel="stylesheet" href="/dist/css/font-awesome.min.css">
+		{block name="include"}{/block}
+	</head>
+	<style>
+		body .to-fix-select .layui-layer-content {overflow: visible;}
+		.form-control {
+			display: block;
+			width: 100%;
+			height: 34px;
+			padding: 6px 12px;
+			font-size: 14px;
+			line-height: 1.42857143;
+			color: #555;
+			background-color: #fff;
+			background-image: none;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+			box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+			-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+			-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+			transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+		}
+	</style>
+	<body class="layui-layout-body">
+		<div class="layui-layout layui-layout-admin">
+			<div class="layui-header">
+				<div class="layui-logo">{$Think.config.app.app_name}</div>
+				<!-- 头部区域（可配合layui已有的水平导航） -->
+				<ul class="layui-nav layui-layout-left">
+					<li class="layui-nav-item"><a href="javascript:void(0)" id='create'>创建清单</a></li>
+					<li class="layui-nav-item">
+						<a href="javascript:;">其它系统</a>
+						<dl class="layui-nav-child">
+							<dd><a href="http://192.168.10.10:8085" target="_blank">报备系统</a></dd>
+						</dl>
+					</li>
+				</ul>
+				<ul class="layui-nav layui-layout-right">
+					<li class="layui-nav-item">
+						<a href="javascript:;">
+							{$Request.session.name}
+						</a>
+					</li>
+					<li class="layui-nav-item"><a href="javascript:vord(0)" onclick="dologout()">退出</a></li>
+				</ul>
+			</div>
+
+			<div class="layui-side layui-bg-black">
+    			<div class="layui-side-scroll">
+      			<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      				<ul class="layui-nav layui-nav-tree"  lay-filter="test">
+      					<li class="layui-nav-item" id="index"><a href="/index">首页</a></li>
+      					<li class="layui-nav-item" id="users"><a href="/users">项目管理</a></li>
+      					<li class="layui-nav-item" id="project"><a href="/project">项目跟踪</a></li>
+
+      					<!-- <li class="layui-nav-item" id="projectlog">
+							<a class="" href="javascript:void(0);">项目跟踪</a>
+							<dl class="layui-nav-child">
+			  					<dd><a id="project" href="/project">&emsp;&emsp;问题清单</a></dd>
+			  					<dd><a id="custom" href="/custom">&emsp;&emsp;定制清单</a></dd>
+							</dl>
+      					</li> -->
+
+      					<li class="layui-nav-item" id="config">
+          					<a class="" href="javascript:void(0);">配置管理</a>
+          					<dl class="layui-nav-child">
+            					<dd><a id="product" href="/config/product">&emsp;&emsp;产品管理</a></dd>
+            					<dd><a id="version" href="/config/version">&emsp;&emsp;版本管理</a></dd>
+          					</dl>
+        				</li>
+        				<li class="layui-nav-item" id="accounts"><a href="/accounts">账户管理</a></li>
+      				</ul>
+    			</div>
+  			</div>
+
+			<div class="layui-body">
+				<div style="padding: 15px;">
+					<!-- 面包屑 -->
+					<div style="height:30px;line-height:30px;">
+					<i class="layui-icon layui-icon-location"></i>&nbsp;
+						<span class="layui-breadcrumb">
+							<a href="/">首页</a>
+							{block name="breadcrumb"}{/block}
+						</span>
+					</div>
+					<!-- 内容主体区域 -->
+					{block name="content"}{/block}
+				</div>
+			</div>
+
+			<!-- 底部固定区域 -->
+			
+			<div class="layui-footer">
+				北京朗阁信息技术有限公司&nbsp;&nbsp;©2010&nbsp;-&nbsp;{:date('Y')}&nbsp;&nbsp;LongGer Inc. All Rights Reserved.
+			</div>
+			
+		</div>
+		<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			$(function(){
+				$("#{$menu}").addClass('layui-this');
+				// 二级菜单选中
+				{if isset($li) }
+					$("#{$li}").addClass('layui-nav-itemed');
+				{/if}
+			})
+
+			function dologout() {
+				$.ajax({
+		            type : "GET",
+		            url : "/index/dologout/",
+		            success : function(result) {
+		            	window.location.reload();
+		            }
+				});
+			}
+		</script>
+		<!-- JavaScript代码区域 -->
+		{block name="js"}
+		{/block}
+	</body>
+</html>

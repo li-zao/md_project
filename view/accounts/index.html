@@ -1,0 +1,126 @@
+{extend  name="layout" /}
+
+{block name="breadcrumb"}
+	<a><cite>账户管理</cite></a>
+{/block}
+
+{block name="content"}
+<div class="layui-col-md12">
+	<table class="layui-hide" id="data_table" lay-filter="data_table"></table>
+</div>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="bar">
+	{if $Request.session.role == 'admin'}
+		<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+	{/if}
+</script>
+
+<!-- 头部工具栏 -->
+<script type="text/html" id="toolbar">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-sm" lay-event="create">创建</button>
+	</div>
+</script>
+{/block}
+
+{block name="js"}
+<script>
+	var table = layui.table;
+	var form = layui.form
+
+	// table 展示
+	table.render({
+		elem: '#data_table',
+		height: '600',
+		toolbar: '#toolbar', //开启头部工具栏，并为其绑定左侧模板
+		url: '/accounts/list/', //数据接口
+		page: true, //开启分页
+		cols: [[ //表头
+			{field: 'uId', title: '序号', width:'5%'},
+			{field: 'uName', title: '用户名', width:'15%'},
+			{field: 'roleDisplay', title: '权限', width:'20%'},
+			{field: 'uMail', title: '邮箱', width:'20%'},
+			{field: 'statusDisplay', title: '状态', width:'20%'},
+			{fixed: 'right', title:'操作', toolbar: '#bar'}
+		]]
+	});
+
+	// 行工具栏事件
+	table.on('tool(data_table)', function(obj){
+		var data = obj.data;
+		if (data.uId != "") {
+			var uId = data.uId;
+			if(obj.event == 'edit'){
+				openDialog(uId)
+			}
+		}
+	});
+
+	// 头工具栏事件
+	table.on('toolbar(data_table)', function(obj){
+		switch(obj.event){
+			case 'create':
+				openDialog('');
+				break;
+		};
+	});
+
+	function openDialog(uId) {
+		let title = "创建账号"
+		if (uId != "") {
+			title = "编辑账号"
+		}
+
+		var dialogIndex = layer.open({
+			title: title,
+			skin:'to-fix-select',
+			type: 2, 
+			tipsMore: true,
+			area: ['50%', '50%'],
+			btn: ['保存', '关闭'],
+			yes: function(index,layero) {
+				// 保存
+				var inputForm = $(window.frames["layui-layer-iframe" + dialogIndex].document).contents().find("#acForm");
+
+				var uName = inputForm.find('input[name=uName]').val();
+				if (uName == "") {
+					layer.msg('用户名不能为空');
+					return false;
+				}
+
+				var uPassword = inputForm.find('input[name=uPassword]').val();
+				if (uPassword == "") {
+					layer.msg('密码不能为空');
+					return false;
+				}
+
+				$.ajax({
+					type: "POST",
+					dataType: "json",
+					url:'/dialog/updateaccounts',
+					data: inputForm.serialize(),
+					success: function (result) {
+						if (result == 1) {
+							layer.msg('操作成功')
+							layer.close(dialogIndex)
+						} else {
+							layer.msg('操作失败')
+							return;
+						}
+					},
+					error: function(data) {
+						layer.msg('操作失败')
+					}
+
+				});
+			},
+			end: function (index, layero) {
+				table.reload('data_table');
+			},
+			content: '/dialog/accounts/uid/' + uId
+		});
+	}
+</script>
+{/block}

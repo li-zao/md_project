@@ -1,0 +1,252 @@
+{extend  name="layout" /}
+{block name="breadcrumb"}
+	<a><cite>项目跟踪</cite></a>
+{/block}
+
+{block name="content"}
+	<div class="layui-col-md12">
+		<div class="layui-collapse">
+			<div class="layui-colla-item">
+				<h2 class="layui-colla-title"><i class="fa fa-search"></i> 检索</h2>
+				<div class="layui-colla-content" style="padding:0">
+					<table class="layui-table layui-form" style="margin:0">
+						<colgroup>
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col>
+						</colgroup>
+						<tbody>
+							<tr>
+								<td>所属项目</td>
+								<td>
+									<select name="searchPfid" id="searchPfid" lay-search>
+										<option value=""></option>
+										{foreach $dbProfiles as $eachPfid => $eachDisplayName}
+											<option value="{$eachPfid}">{$eachDisplayName}</option>
+										{/foreach}
+									</select>
+								</td>
+								<td>问题分类</td>
+								<td>
+									<select name="searchPtype">
+										<option value=""></option>
+										{foreach $configProjectType as $eachStatus => $eachName } 
+											<option value="{$eachStatus}">{$eachName}</option>
+										{/foreach}
+									</select>
+								</td>
+								<td colspan="4">
+									
+								</td>
+							</tr>
+							<tr>
+								<td colspan="8">
+									<button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="resetBtn" style="float:right">重置</button>
+									<button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="searchBtn" style="float:right;margin-right:10px">查询</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-col-md12">
+		<table class="layui-hide" id="data_table" lay-filter="data_table"></table>
+	</div>
+
+	<!-- 行工具栏 -->
+	<script type="text/html" id="bar">
+		<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+
+		{{# if (d.pType == 0) {}}
+			<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">bug</a>
+		{{# } }}
+
+		{{# if (d.pType == 1) {}}
+			<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">配置</a>
+		{{# } }}
+
+		{{# if (d.pType == 2) {}}
+			<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">定制</a>
+		{{# } }}
+	</script>
+
+	<!-- 头部工具栏 -->
+	<script type="text/html" id="toolbar">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-sm" lay-event="create">创建</button>
+		</div>
+	</script>
+{/block}
+
+{block name="js"}
+	<script>
+		var laydate = layui.laydate
+		var table = layui.table;
+		var form = layui.form
+		var layer = layui.layer;  
+
+		$(function(){
+			$('#searchBtn').click(function(){
+				// 检索条件用
+				var pfid = $('select[name="searchPfid"]').val();
+				var ptype = $('select[name="searchPtype"]').val();
+
+
+				table.reload("data_table", {
+					url: '/project/list/', //数据接口
+					where: {
+						pfid: pfid,
+						ptype: ptype,
+					},
+					page: {
+						curr: 1 //重新从第 1 页开始
+					}
+				})
+			})
+
+			$('#resetBtn').click(function(){
+				window.location.href = "/project"
+			})
+		})
+
+		// table 展示
+		table.render({
+			elem: '#data_table',
+			height: '600',
+			toolbar: '#toolbar', //开启头部工具栏，并为其绑定左侧模板
+			url: '/project/list/', //数据接口
+			page: true, //开启分页
+			cols: [[ //表头
+				{type:'checkbox'},
+				{field: 'pId', title: '序号', width:'5%'},
+				{field: 'pfName', title: '所属项目', width:'25%'},
+				{field: 'pTitle', title: '清单标题', width:'25%'},
+				{field: 'pTypeDisplay', title: '清单类型', width:'10%'},
+				{field: 'pStatusDisplay', title: '清单状态', width:'10%'},
+				{fixed: 'right', title:'操作', toolbar: '#bar'}
+			]]
+		});
+
+		// 行工具栏事件
+		table.on('tool(data_table)', function(obj){
+			var data = obj.data;
+			if (data.pId != "") {
+				var pId = data.pId;
+				if(obj.event == 'edit'){
+					// 评估
+					openBugDetail(pId)
+				}
+			}
+		});
+
+		// 头工具栏事件
+		table.on('toolbar(data_table)', function(obj){
+			// var checkStatus = table.checkStatus(obj.config.id);
+			// var data = checkStatus.data;
+			// if (obj.event == 'bulkDownload' || obj.event == 'bulkDownload') {
+			// 	if (data.length == 0) {
+			// 		layer.msg('请选择要操作的邮件')
+			// 		return false;
+			// 	}
+			// }
+			// var mIds = [];
+			// $.each(data, function(a,b){
+			// 	mIds.push(b.mId)
+			// })
+
+			// var mIdSting = mIds.toString()
+			switch(obj.event){
+				case 'create':
+					openBugDetail('');
+					break;
+				case 'bulkDownload':
+					window.location.href='/queue/bulkdownload/ids/' + mIdSting;
+					break;
+				case 'bulkDelete':
+					layer.confirm('是否删除选中的'+data.length+'封邮件', function(index){
+						$.ajax({ 
+							type : "GET",
+							url : "/queue/bulkdel",
+							data : {ids: mIdSting},
+							success : function(result) {
+								if (result == 1) {
+									layer.close(index);
+									table.reload('data_table');
+									layer.msg('删除成功');
+								} else {
+									layer.msg('删除失败');
+								}
+							}
+						});
+					});
+					break;
+			};
+		});
+
+		function openBugDetail(pId) {
+			let title = "创建清单"
+			let area = ['50%', '50%']
+			if (pId != "") {
+				title = "编辑清单"
+				area = ['90%', '90%']
+			}
+			var dialogIndex = layer.open({
+				title: title,
+				skin:'to-fix-select',
+				type: 2, 
+				tipsMore: true,
+				area: area,
+				btn: ['保存', '关闭'],
+				yes: function(index,layero) {
+					// 保存
+					var inputForm = $(window.frames["layui-layer-iframe" + dialogIndex].document).contents().find("#pjForm");
+
+					var pfId = inputForm.find('input[name=pfId]').val();
+					if (pfId == "") {
+						layer.msg('所属项目不能为空');
+						return false;
+					}
+
+					var title = inputForm.find('input[name=pTitle]').val();
+					if (title == "") {
+						layer.msg('标题不能为空');
+						return false;
+					}
+
+					$.ajax({
+						type: "POST",
+						dataType: "json",
+						url:'/dialog/updateproject',
+						data: inputForm.serialize(),
+						success: function (result) {
+							if (result == 1) {
+								layer.msg('操作成功')
+								layer.close(dialogIndex)
+							} else {
+								layer.msg('操作失败')
+								return;
+							}
+						},
+						error: function(data) {
+							layer.msg('操作失败')
+						}
+
+					});
+				},
+				end: function (index, layero) {
+					table.reload('data_table');
+				},
+				content: '/dialog/project/pid/' + pId
+			});
+		}
+	</script>
+{/block}

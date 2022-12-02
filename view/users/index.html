@@ -1,0 +1,250 @@
+{extend  name="layout" /}
+{block name="breadcrumb"}
+	<a><cite>项目管理</cite></a>
+{/block}
+
+{block name="content"}
+	<div class="layui-col-md12 layui-hide">
+		<div class="layui-collapse">
+			<div class="layui-colla-item">
+				<h2 class="layui-colla-title"><i class="fa fa-search"></i> 检索</h2>
+				<div class="layui-colla-content" style="padding:0">
+					<table class="layui-table layui-form" style="margin:0">
+						<colgroup>
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col width="15%">
+							<col width="10%">
+							<col>
+						</colgroup>
+						<tbody>
+							<tr>
+								<td>邮件主题</td>
+								<td>
+									<input type="text" class="layui-input" id="searchSubject">
+								</td>
+								<td>邮件标记</td>
+								<td>
+									<input type="text" class="layui-input" id="searchTag">
+								</td>
+								<td>预期结果</td>
+								<td>
+									<select name="searchExpected" lay-search>
+										<option value=""></option>
+									</select>
+								</td>
+								<td>扫描结果</td>
+								<td>
+									<select name="searchActual" lay-search>
+										<option value=""></option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>上传人</td>
+								<td>
+									<select name="searchUploader" lay-search>
+										<option value=""></option>
+									</select>
+								</td>
+								<td>上传时间</td>
+								<td>
+									<input type="text" name="searchUploadtime" id="searchUploadtime" lay-verify="searchUploadtime" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+								</td>
+								<td colspan="4">
+									<button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="resetBtn" style="float:right">重置</button>
+									<button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="searchBtn" style="float:right;margin-right:10px">查询</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-col-md12">
+		<table class="layui-hide" id="data_table" lay-filter="data_table"></table>
+	</div>
+
+	<!-- 行工具栏 -->
+	<script type="text/html" id="bar">
+		<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+	</script>
+
+	<!-- 头部工具栏 -->
+	<script type="text/html" id="toolbar">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-sm" lay-event="create">创建</button>
+		</div>
+	</script>
+{/block}
+
+{block name="js"}
+	<script>
+		var laydate = layui.laydate
+		var table = layui.table;
+		var form = layui.form
+
+		$(function(){
+			$('#searchBtn').click(function(){
+				// 检索条件用
+				var title = '';
+
+				table.reload("data_table", {
+					url: '/users/list/', //数据接口
+					where: {
+						title: title,
+					},
+					page: {
+						curr: 1 //重新从第 1 页开始
+					}
+				})
+			})
+
+			$('#resetBtn').click(function(){
+				window.location.href = "/users"
+			})
+		})
+
+		// table 展示
+		table.render({
+			elem: '#data_table',
+			height: '600',
+			toolbar: '#toolbar', //开启头部工具栏，并为其绑定左侧模板
+			url: '/users/list/', //数据接口
+			page: true, //开启分页
+			cols: [[ //表头
+				{type:'checkbox'},
+				{field: 'pfId', title: '序号', width:'5%'},
+				{field: 'pfDisplay', title: '项目名称', width:'45%'},
+				{fixed: 'right', title:'操作', toolbar: '#bar'}
+			]]
+		});
+
+		table.on('rowDouble(data_table)', function(obj){
+			var pfId = obj.data.pfId
+			showPorfileSummary(pfId)
+		});
+
+		// 行工具栏事件
+		table.on('tool(data_table)', function(obj){
+			var data = obj.data;
+			if (data.pfId != "") {
+				var pfId = data.pfId;
+				if(obj.event == 'edit'){
+					openProfileDialog(pfId)
+				}
+			}
+		});
+
+		// 头工具栏事件
+		table.on('toolbar(data_table)', function(obj){
+			// var checkStatus = table.checkStatus(obj.config.id);
+			// var data = checkStatus.data;
+			// if (obj.event == 'bulkDownload' || obj.event == 'bulkDownload') {
+			// 	if (data.length == 0) {
+			// 		layer.msg('请选择要操作的邮件')
+			// 		return false;
+			// 	}
+			// }
+			// var mIds = [];
+			// $.each(data, function(a,b){
+			// 	mIds.push(b.mId)
+			// })
+
+			// var mIdSting = mIds.toString()
+			switch(obj.event){
+				case 'create':
+					openProfileDialog('');
+					break;
+				case 'bulkDownload':
+					window.location.href='/queue/bulkdownload/ids/' + mIdSting;
+					break;
+				case 'bulkDelete':
+					layer.confirm('是否删除选中的'+data.length+'封邮件', function(index){
+						$.ajax({ 
+							type : "GET",
+							url : "/queue/bulkdel",
+							data : {ids: mIdSting},
+							success : function(result) {
+								if (result == 1) {
+									layer.close(index);
+									table.reload('data_table');
+									layer.msg('删除成功');
+								} else {
+									layer.msg('删除失败');
+								}
+							}
+						});
+					});
+					break;
+			};
+		});
+
+		function openProfileDialog(pfId) {
+			let title = "创建项目"
+			if (pfId != "") {
+				title = "编辑项目"
+			}
+			var dialogIndex = layer.open({
+				title: title,
+				skin:'to-fix-select',
+				type: 2, 
+				tipsMore: true,
+				area: ['90%', '90%'],
+				btn: ['保存', '关闭'],
+				yes: function(index,layero) {
+					// 保存
+					var inputForm = $(window.frames["layui-layer-iframe" + dialogIndex].document).contents().find("#pfForm");
+
+					var pfName = inputForm.find('input[name=pfName]').val();
+					if (pfName == "") {
+						layer.msg('项目名称不能为空');
+						return false;
+					}
+
+					$.ajax({
+						type: "POST",
+						dataType: "json",
+						url:'/dialog/updateprofile',
+						data: inputForm.serialize(),
+						success: function (result) {
+							if (result == 1) {
+								layer.msg('操作成功')
+								layer.close(dialogIndex)
+							} else {
+								layer.msg('操作失败')
+								return;
+							}
+						},
+						error: function(data) {
+							layer.msg('操作失败')
+						}
+
+					});
+				},
+				end: function (index, layero) {
+					table.reload('data_table');
+				},
+				content: '/dialog/profile/pfid/' + pfId
+			});
+		}
+
+		function showPorfileSummary(pfId) {
+			var dialogIndex = layer.open({
+				title: '摘要',
+				skin:'to-fix-select',
+				type: 2, 
+				tipsMore: true,
+				area: ['90%', '90%'],
+				btn: ['关闭'],
+				content: '/dialog/pfsummary/pfid/' + pfId
+			});
+		}
+	</script>
+{/block}

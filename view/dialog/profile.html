@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="/layui/css/layui.css">
+	<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/xm-select.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+	.layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table[lay-even] tr:nth-child(even) {
+	    background-color: transparent;
+	}
+
+	td {
+		word-break:keep-all;/* 不换行 */
+		white-space:nowrap;/* 不换行 */
+		overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */
+		text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	}
+
+	.layui-inline-double-width {
+		width: 380px !important;
+	}
+</style>
+<body style="padding:10px 10px 10px 10px">
+	<div class="layui-container" style="width:100%">
+		<form id="pfForm" lay-filter="pfForm" class="layui-form layui-form-pane" action="">
+			<fieldset class="layui-elem-field">
+				<legend>基本信息</legend>
+				<div class="layui-field-box">
+					<div class="layui-form-item">
+						<label class="layui-form-label">项目名称</label>
+						<div class="layui-input-block">
+							<input type="text" id="pfName" name="pfName" autocomplete="off" placeholder="请输入项目名称" class="layui-input" lay-verify="required">
+						</div>
+					</div>
+					
+					<div class="layui-form-item" pane="">
+						<label class="layui-form-label">所属产品</label>
+						<div class="layui-input-block">
+							{foreach $dbProducts as $pdInfo } 
+								<input type="radio" name="pdId" value="{$pdInfo['pdId']}" title="{$pdInfo['pdName']}" lay-filter="filter-pdId">
+							{/foreach}
+						</div>
+					</div>
+
+					<div class="layui-form-item">
+						<label class="layui-form-label">显示名称</label>
+						<div class="layui-input-block">
+							<input type="text" id="pfDisplay" name="pfDisplay" autocomplete="off" placeholder="请输入显示名称" class="layui-input" lay-verify="required">
+						</div>
+					</div>
+
+					<div class="layui-form-item">
+						<label class="layui-form-label">软件包</label>
+						<div class="layui-input-block">
+							<select id="pkSelect" name="pkId" lay-search>
+								<option value="" belong=0>请选择</option>
+								{foreach $dbPackages as $pkInfo } 
+									<option value="{$pkInfo['pkId']}" belong="{$pkInfo['pdId']}" lay-filter="pkOption">{$pkInfo['pkName']}</option>
+								{/foreach}
+							</select>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+			
+			<fieldset class="layui-elem-field">
+				<legend>
+					设备信息
+					<button type="button" class="layui-btn layui-btn-sm" onclick="addDevice()"><i class="layui-icon layui-icon-addition"></i></button>
+					<button type="button" class="layui-btn layui-btn-sm" onclick="delDevice()"><i class="layui-icon layui-icon-subtraction"></i></button>
+				</legend>
+				<div class="layui-field-box" id="device-content">
+					
+						{foreach $devices as $index => $dInfo}
+						{php}$i = $index + 1{/php}
+							<div class="layui-form-item device-list" id="origin-deivce-div-{$i}">
+								<div class="layui-inline">
+									<label class="layui-form-label">设备名称</label>
+									<div class="layui-input-inline">
+										<input type="text" id="device-name" name="device[{$i}][].name" autocomplete="off" value="{$dInfo['dName']}" class="layui-input">
+									</div>
+								</div>
+								<div class="layui-inline">
+									<label class="layui-form-label">IP</label>
+									<div class="layui-input-inline">
+										<input type="text" id="device-ip" name="device[{$i}][].ip" autocomplete="off" value="{$dInfo['dIp']}" class="layui-input">
+									</div>
+								</div>
+								<div class="layui-inline">
+									<label class="layui-form-label">用户名</label>
+									<div class="layui-input-inline">
+										<input type="text" id="device-user" name="device[{$i}][].user" autocomplete="off" value="{$dInfo['dUser']}" class="layui-input">
+									</div>
+								</div>
+								<div class="layui-inline">
+									<label class="layui-form-label">密码</label>
+									<div class="layui-input-inline">
+										<input type="text" id="device-pass" name="device[{$i}][].pass" autocomplete="off" value="{$dInfo['dPass']}" class="layui-input">
+									</div>
+								</div>
+								<div class="layui-inline">
+									<label class="layui-form-label">备注</label>
+									<div class="layui-input-inline">
+										<input type="text" id="device-content" name="device[{$i}][].content" autocomplete="off" value="{$dInfo['dContent']}" class="layui-input">
+									</div>
+								</div>
+							</div>
+						{/foreach}
+				</div>
+			</fieldset>
+			<input type="hidden" name="pfId">
+		</form>
+	</div>
+</body>
+
+<script>
+var deviceIndex = {$deviceIndex};
+var defaultPdid = 1;
+var pkSelectData = $("#pkSelect").clone();
+var form = layui.form;
+
+// form数据初始化
+{if !empty($pfInfo)}
+	changePackageSelect({$pfInfo["pdId"]});
+
+	form.val("pfForm", {
+		pfId: '{$pfInfo["pfId"]}',
+		pfName: '{$pfInfo["pfName"]}',
+		pdId: '{$pfInfo["pdId"]}',
+		pkId: '{$pfInfo["pkId"]}',
+		pfDisplay: '{$pfInfo["pfDisplay"]}',
+	})
+{else/}
+	// 产品默认选中归档，并查询归档的版本
+	$('input[name="pdId"][value='+defaultPdid+']').attr('checked','checked');
+	changePackageSelect(defaultPdid);
+{/if}
+
+$(function(){
+	// 渲染form
+	form.render();
+
+	// 自动拼接显示名称
+	form.on('radio(filter-pdId)', function(data){
+		changePackageSelect(data.value)
+		getDisplayName()
+	});
+})
+
+// 自动拼接显示名称
+$('#pfName').blur(function(){
+	getDisplayName()
+})
+
+// 根据不同产品显示对应的软件包
+function changePackageSelect(pdId) {
+	$("#pkSelect").find('option').remove();
+	var options = pkSelectData.find("option[belong="+pdId+"]").clone();
+	$("#pkSelect").append(options);
+
+	// 渲染form
+	form.render();
+}
+
+// 动态生成显示名称
+function getDisplayName() {
+	var pdName = $("input[name=pdId]:checked").attr('title');
+	var pfName = $('#pfName').val();
+
+	$('#pfDisplay').val(pfName + '-' + pdName)
+}
+
+function addDevice() {
+	deviceIndex += 1
+	var newId = "origin-deivce-div-" + deviceIndex;
+	var newHtml = $('#origin-deivce-div-1').clone(true).attr('id', newId);
+
+	newHtml.find('#device-name').removeAttr('id').attr('name', "device["+deviceIndex+"][].name").val('');
+	newHtml.find('#device-ip').removeAttr('id').attr('name', "device["+deviceIndex+"][].ip").val('');
+	newHtml.find('#device-user').removeAttr('id').attr('name', "device["+deviceIndex+"][].user").val('');
+	newHtml.find('#device-pass').removeAttr('id').attr('name', "device["+deviceIndex+"][].pass").val('');
+	newHtml.find('#device-content').removeAttr('id').attr('name', "device["+deviceIndex+"][].content").val('');
+
+	$('#device-content').append(newHtml)
+}
+
+function delDevice() {
+	if (deviceIndex == 1) {
+		return;
+	}
+	var nowId = "origin-deivce-div-" + deviceIndex;
+	$('#'+nowId).remove();
+
+	deviceIndex -= 1
+}
+</script>

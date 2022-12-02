@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="/layui/css/layui.css">
+	<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/xm-select.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+	.layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table[lay-even] tr:nth-child(even) {
+	    background-color: transparent;
+	}
+
+	td {
+		word-break:keep-all;/* 不换行 */
+		white-space:nowrap;/* 不换行 */
+		overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */
+		text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	}
+
+	.layui-inline-double-width {
+		width: 380px !important;
+	}
+</style>
+<body style="padding:10px 10px 10px 10px">
+	<div class="layui-container" style="width:100%">
+		<form id="pjForm" lay-filter="pjForm" class="layui-form layui-form-pane" action="">
+			<fieldset class="layui-elem-field">
+				<legend>基本信息</legend>
+				<div class="layui-field-box">
+					<table class="layui-table" style="table-layout:fixed;width:100%">
+						<tr>
+							<td>用户名称：{$pfInfo['pfDisplay']}</td>
+							<td>所属产品：{$pfInfo['product']}</td>
+							<td colspan="2">软件包/补丁：{$pfInfo['package']}</td>
+						</tr>
+					</table>
+				</div>
+			</fieldset>
+			
+			<fieldset class="layui-elem-field">
+				<legend>
+					设备信息
+				</legend>
+				<div class="layui-field-box" id="device-content">
+					<table class="layui-table" style="table-layout:fixed;width:100%">
+						{foreach $pfInfo['devices'] as $dInfo}
+							<tr>
+								<td>设备名称：{$dInfo['dName']}</td>
+								<td>用户名：{$dInfo['dUser']}</td>
+								<td>密码：{$dInfo['dPass']}</td>
+								<td>IP：{$dInfo['dIp']}</td>
+								<td>备注：{$dInfo['dContent']}</td>
+							</tr>
+						{/foreach}
+					</table>
+				</div>
+			</fieldset>
+
+			<fieldset class="layui-elem-field">
+				<legend>
+					项目信息
+				</legend>
+				<div class="layui-field-box" id="device-content">
+					<ul class="layui-timeline">
+						{foreach $pfInfo['tasks'] as $tInfo}
+						<li class="layui-timeline-item">
+							<i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+							<div class="layui-timeline-content layui-text">
+								<h3 class="layui-timeline-title">
+									【{$tInfo['pTypeDisplay']}】 {$tInfo['pStatusDisplay']} <{$tInfo['pTitle']}>
+								</h3>
+								<p>
+									{$tInfo['pContent']}
+								</p>
+							</div>
+						</li>
+						{/foreach}
+					</ul>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</body>
+
+<script>
+var form = layui.form;
+$(function(){
+	// 渲染form
+	form.render();
+})
+</script>

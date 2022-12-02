@@ -1,0 +1,43 @@
+{extend  name="layout" /}
+{block name="breadcrumb"}
+	<a href="">配置管理</a>
+	<a><cite>产品管理</cite></a>
+{/block}
+
+{block name="content"}
+<div class="layui-col-md12">
+	<table class="layui-hide" id="data_table" lay-filter="data_table"></table>
+</div>
+
+<script type="text/html" id="bar">
+	<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+{/block}
+
+{block name="js"}
+	<script>
+		var laydate = layui.laydate
+		var table = layui.table;
+		var form = layui.form
+
+		// table 展示
+		table.render({
+			elem: '#data_table',
+			height: '700',
+			toolbar: '#toolbar', //开启头部工具栏，并为其绑定左侧模板
+			url: '/config/pdlist/', //数据接口
+			page: true, //开启分页
+			cols: [[ //表头
+				// {type:'checkbox'},
+				{field: 'pdId', title: '序号', width:'5%'},
+				{field: 'pdName', title: '产品名称'},
+				// {fixed: 'right', title:'操作', toolbar: '#bar'}
+			]]
+		});	
+
+		table.on('rowDouble(data_table)', function(obj){
+
+		});
+	</script>
+{/block}

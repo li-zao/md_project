@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="/layui/css/layui.css">
+	<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/xm-select.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+	.layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table[lay-even] tr:nth-child(even) {
+	    background-color: transparent;
+	}
+
+	td {
+		word-break:keep-all;/* 不换行 */
+		white-space:nowrap;/* 不换行 */
+		overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */
+		text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	}
+
+	.layui-inline-double-width {
+		width: 380px !important;
+	}
+</style>
+<body style="padding:10px 10px 10px 10px">
+	<div class="layui-container" style="width:100%">
+		<form id="pkForm" lay-filter="pkForm" class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<label class="layui-form-label">包名称</label>
+				<div class="layui-input-block">
+					<input type="text" name="pkName" autocomplete="off" placeholder="请输入软件包名称" class="layui-input" lay-verify="required">
+				</div>
+			</div>
+
+			<div class="layui-form-item" pane="">
+				<label class="layui-form-label">所属产品</label>
+				<div class="layui-input-block">
+					{foreach $dbProducts as $pdInfo } 
+						<input type="radio" name="pdId" value="{$pdInfo['pdId']}" title="{$pdInfo['pdName']}" lay-filter="filter-pdId">
+					{/foreach}
+				</div>
+			</div>
+
+			<div class="layui-form-item" pane="">
+				<label class="layui-form-label">包类型</label>
+				<div class="layui-input-block">
+					<input type="radio" name="pkRadio" value="0" title="软件包" lay-filter="filter-pkType">
+					<input type="radio" name="pkRadio" value="1" title="补丁包" lay-filter="filter-pkType">
+				</div>
+			</div>
+
+			<div class="layui-form-item" id="parentIdContent" pane="">
+				<label class="layui-form-label">所属包</label>
+				<div class="layui-input-block">
+					<select name="parentId" id="pkSelect" lay-search>
+						<option value=""></option>
+						{foreach $mainPackages as $pkInfo } 
+							<option value="{$pkInfo['pkId']}" belong="{$pkInfo['pdId']}" lay-filter="pkOption">{$pkInfo['pkName']}</option>
+						{/foreach}
+					</select>
+				</div>
+			</div>
+			
+
+			<input type="hidden" name="pkId">
+			<input type="hidden" name="pkType">
+		</form>
+	</div>
+</body>
+
+<script>
+var form = layui.form;
+var defaultPdid = 1;
+var pkSelectData = $("#pkSelect").clone();
+var pkRadioValue = 0;
+
+// form数据初始化
+{if !empty($packageInfo)}
+	$('input[name="pdId"], input[name="pkRadio"]').attr('disabled', 'disabled')
+	changePackageSelect({$packageInfo["pdId"]})
+
+	form.val("pkForm", {
+		pkId: '{$packageInfo["pkId"]}',
+		pkName: '{$packageInfo["pkName"]}',
+		pdId: '{$packageInfo["pdId"]}',
+		pkType: '{$packageInfo["pkType"]}',
+		parentId: '{$packageInfo["pkType"]}',
+	})
+	{if $packageInfo['pkType'] > 0}
+		pkRadioValue = 1;
+	{/if}
+{else/}
+	$('input[name="pdId"][value='+defaultPdid+']').attr('checked','checked');
+	changePackageSelect(defaultPdid)
+
+{/if}
+
+$('input[name="pkRadio"][value='+pkRadioValue+']').attr('checked','checked');
+changePkSelectDisplay(pkRadioValue)
+
+// 显示、隐藏所属软件包
+form.on('radio(filter-pkType)', function(data){
+	changePkSelectDisplay(data.value)
+});
+
+// 根据不同产品显示对应的软件包
+form.on('radio(filter-pdId)', function(data){
+	changePackageSelect(data.value)
+});
+
+function changePkSelectDisplay(pkType) {
+	if (pkType == 0) {
+		$('#parentIdContent').hide();
+	} else {
+		$('#parentIdContent').show();
+	}
+}
+
+// 根据不同产品显示对应的软件包
+function changePackageSelect(pdId) {
+	$("#pkSelect").find('option').remove();
+	var options = pkSelectData.find("option[belong="+pdId+"]").clone();
+	$("#pkSelect").append(options);
+
+	// 渲染form
+	form.render();
+}
+
+$(function(){
+	// 渲染form
+	form.render();
+})
+</script>

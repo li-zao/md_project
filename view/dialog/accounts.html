@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="/layui/css/layui.css">
+	<script src="/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/dist/js/xm-select.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+	.layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table[lay-even] tr:nth-child(even) {
+	    background-color: transparent;
+	}
+
+	td {
+		word-break:keep-all;/* 不换行 */
+		white-space:nowrap;/* 不换行 */
+		overflow:hidden;/* 内容超出宽度时隐藏超出部分的内容 */
+		text-overflow:ellipsis;/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用*/
+	}
+</style>
+<body style="padding:10px 10px 10px 10px">
+	<div class="layui-container" style="width:100%">
+		<form id="acForm" lay-filter="acForm" class="layui-form layui-form-pane" action="">
+			<div class="layui-form-item">
+				<label class="layui-form-label">用户名</label>
+				<div class="layui-input-block">
+					<input type="text" name="uName" autocomplete="off" placeholder="请输入用户名" class="layui-input" lay-verify="required">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">密码</label>
+				<div class="layui-input-block">
+					<input type="password" name="uPassword" autocomplete="off" placeholder="请输入密码" class="layui-input" lay-verify="required">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">邮箱</label>
+				<div class="layui-input-block">
+					<input type="text" name="uMail" autocomplete="off" placeholder="请输入用户邮箱" class="layui-input" lay-verify="required">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">状态</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="switchStatus" id="switchStatus" lay-filter="switchStatus" lay-skin="switch" lay-text="启用|禁用">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<div class="layui-block">
+					<label class="layui-form-label">权限</label>
+					<div class="layui-input-block">
+						{foreach $configRoles as $eachRole => $eachRoleName } 
+							<input type="radio" name="uRole" value="{$eachRole}" title="{$eachRoleName}" lay-filter="filter-uRole">
+						{/foreach}
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item" id="uAuthDiv" style="display:none;">
+				<div class="layui-block">
+					<label class="layui-form-label">属组</label>
+					<div class="layui-input-block">
+						<input type="checkbox" name="uAuth[1]" id="s1" value="1" title="研发1组">
+						<input type="checkbox" name="uAuth[2]" id="s2" value="2" title="研发2组">
+						<input type="checkbox" name="uAuth[3]" id="s3" value="4" title="研发3组">
+					</div>
+				</div>
+			</div>
+
+			<input type="hidden" name="uId">
+			<input type="hidden" name="uStatus" value="1">
+		</form>
+	</div>
+</body>
+
+<script>
+	var form = layui.form;
+	var laydate = layui.laydate
+	var userStatus = 1;
+
+	// form数据初始化
+	{if !empty($userInfo)}
+		form.val("acForm", {
+			uId: '{$userInfo["uId"]}',
+			uName: '{$userInfo["uName"]}',
+			uPassword: '{$userInfo["uPassword"]}',
+			uMail: '{$userInfo["uMail"]}',
+			uStatus: '{$userInfo["uStatus"]}',
+			uRole: '{$userInfo["uRole"]}',
+		})
+
+		{if $userInfo['uRole'] == 'dev'}
+			$('#uAuthDiv').show();
+		{/if}
+
+		{if isset($userInfo[1])}
+			$('#s1').attr('checked', 'checked')
+		{/if}
+		{if isset($userInfo[2])}
+			$('#s2').attr('checked', 'checked')
+		{/if}
+		{if isset($userInfo[4])}
+			$('#s3').attr('checked', 'checked')
+		{/if}
+
+		userStatus = '{$userInfo["uStatus"]}'
+	{else/}
+		form.val("acForm", {
+			uRole: 'admin',
+		})
+	{/if}
+
+	// 根据开关修改状态hidden
+	form.on('switch(switchStatus)', function (data) {
+		form.val("acForm", {
+			uStatus: this.checked ? '1' : '0'
+		})
+	})
+
+	// 根据选中展示、隐藏组权限
+	form.on('radio(filter-uRole)', function (data) {
+		if (data.value == 'dev') {
+			$('#uAuthDiv').show();
+		} else {
+			$('#uAuthDiv').hide();
+		}
+	})
+
+	$(function(){
+		// 更改状态开关样式
+		updateSwitch(userStatus)
+		
+		// 渲染form
+		form.render();
+	})
+
+	function updateSwitch(value) {
+		if (value == '1') {
+			$('#switchStatus').attr('checked', 'checked');
+		} else {
+			$('#switchStatus').removeAttr('checked');
+		}
+	}
+</script>

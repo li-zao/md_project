@@ -1,0 +1,2 @@
+MAILTO=""
+0-59/1 * * * * /usr/bin/php /var/www/md_scan/think scan todo
