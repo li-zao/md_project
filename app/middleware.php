@@ -9,4 +9,5 @@ return [
     \think\middleware\SessionInit::class,
     // 登录状态验证
     \app\middleware\isLogin::class,
+    \app\middleware\Log::class,
 ];

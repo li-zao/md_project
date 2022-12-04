@@ -133,62 +133,47 @@
 
 		// 行工具栏事件
 		table.on('tool(data_table)', function(obj){
+			console.log(obj);
 			var data = obj.data;
-			if (data.pfId != "") {
-				var pfId = data.pfId;
-				if(obj.event == 'edit'){
-					openProfileDialog(pfId)
-				}
+			let pfId = obj.data.pfid;
+			switch (obj.event) {
+				case 'edit':
+					openProfileDialog(pfId);
+					break;
+				case 'del':
+					delProfileDialog(data);
+					break;
 			}
 		});
-
+		function delProfileDialog(data) {
+			if (!data.pfId) {
+				return false;
+			}
+			layer.confirm('确认删除:'+data.pfDisplay+'？', function(index) {
+				$.ajax({ 
+					type : "POST",
+					url : "/dialog/delProfile",
+					data : {id: data.pfId},
+					success : function(result) {
+						if (result) {
+							layer.close(index);
+							table.reload('data_table');
+							layer.msg('删除成功');
+						} else {
+							layer.msg('删除失败');
+						}
+					}
+				});
+			});
+		}
 		// 头工具栏事件
 		table.on('toolbar(data_table)', function(obj){
-			// var checkStatus = table.checkStatus(obj.config.id);
-			// var data = checkStatus.data;
-			// if (obj.event == 'bulkDownload' || obj.event == 'bulkDownload') {
-			// 	if (data.length == 0) {
-			// 		layer.msg('请选择要操作的邮件')
-			// 		return false;
-			// 	}
-			// }
-			// var mIds = [];
-			// $.each(data, function(a,b){
-			// 	mIds.push(b.mId)
-			// })
-
-			// var mIdSting = mIds.toString()
-			switch(obj.event){
-				case 'create':
-					openProfileDialog('');
-					break;
-				case 'bulkDownload':
-					window.location.href='/queue/bulkdownload/ids/' + mIdSting;
-					break;
-				case 'bulkDelete':
-					layer.confirm('是否删除选中的'+data.length+'封邮件', function(index){
-						$.ajax({ 
-							type : "GET",
-							url : "/queue/bulkdel",
-							data : {ids: mIdSting},
-							success : function(result) {
-								if (result == 1) {
-									layer.close(index);
-									table.reload('data_table');
-									layer.msg('删除成功');
-								} else {
-									layer.msg('删除失败');
-								}
-							}
-						});
-					});
-					break;
-			};
+			
 		});
 
 		function openProfileDialog(pfId) {
 			let title = "创建项目"
-			if (pfId != "") {
+			if (!pfId) {
 				title = "编辑项目"
 			}
 			var dialogIndex = layer.open({
@@ -203,7 +188,7 @@
 					var inputForm = $(window.frames["layui-layer-iframe" + dialogIndex].document).contents().find("#pfForm");
 
 					var pfName = inputForm.find('input[name=pfName]').val();
-					if (pfName == "") {
+					if (!pfName) {
 						layer.msg('项目名称不能为空');
 						return false;
 					}
@@ -214,18 +199,16 @@
 						url:'/dialog/updateprofile',
 						data: inputForm.serialize(),
 						success: function (result) {
-							if (result == 1) {
+							if (result) {
 								layer.msg('操作成功')
 								layer.close(dialogIndex)
 							} else {
 								layer.msg('操作失败')
-								return;
 							}
 						},
 						error: function(data) {
 							layer.msg('操作失败')
 						}
-
 					});
 				},
 				end: function (index, layero) {

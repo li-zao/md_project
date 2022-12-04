@@ -50,28 +50,66 @@
 
 		// 行工具栏事件
 		table.on('tool(data_table)', function(obj){
+			console.log(obj);
 			var data = obj.data;
-			if (data.pkId != "") {
-				var pkId = data.pkId;
-				if(obj.event == 'edit'){
-					openVersionDialog(pkId)
-				}
+			if (!data.pkId) {
+				return false;
+			}
+			switch (obj.event) {
+				case 'edit':
+					openVersionDialog(data.pkId);
+					break;
+				case 'del':
+					delVersionDialog(data);
+					break;
 			}
 		});
 
 		// 头工具栏事件
 		table.on('toolbar(data_table)', function(obj){
+			console.log(obj);
 			// var mIdSting = mIds.toString()
 			switch(obj.event){
 				case 'create':
 					openVersionDialog('');
 					break;
-			};
+			}
 		});
 
+		/**
+		 * 删除版本
+		 * @param data
+		 * @returns {boolean}
+		 */
+		function delVersionDialog(data) {
+			if (!data.pkId) {
+				return false;
+			}
+			layer.confirm('确认删除：' + data.pkName + '?', function (index) {
+				$.ajax({ 
+					type : "POST",
+					url : "/dialog/delPackage",
+					data : {id: data.pkId},
+					success : function(result) {
+						if (result) {
+							layer.close(index);
+							table.reload('data_table');
+							layer.msg('删除成功');
+						} else {
+							layer.msg('删除失败');
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 添加 | 编辑
+		 * @param pkId
+		 */
 		function openVersionDialog(pkId) {
 			let title = "创建版本"
-			if (pkId != "") {
+			if (pkId) {
 				title = "编辑版本"
 			}
 			var dialogIndex = layer.open({
@@ -84,10 +122,15 @@
 				yes: function(index,layero) {
 					// 保存
 					var inputForm = $(window.frames["layui-layer-iframe" + dialogIndex].document).contents().find("#pkForm");
-
 					var pkName = inputForm.find('input[name=pkName]').val();
-					if (pkName == "") {
+					if (!pkName) {
 						layer.msg('软件包名不能为空');
+						return false;
+					}
+					let pkRadio = inputForm.find('input[name=pkRadio]').val();
+					let parentId = inputForm.find('select[name=parentId]').val();
+					if (pkRadio && !parentId) {
+						layer.msg('请选择所属包');
 						return false;
 					}
 
@@ -97,18 +140,16 @@
 						url:'/dialog/updatepackage',
 						data: inputForm.serialize(),
 						success: function (result) {
-							if (result == 1) {
+							if (result) {
 								layer.msg('操作成功')
 								layer.close(dialogIndex)
 							} else {
 								layer.msg('操作失败')
-								return;
 							}
 						},
 						error: function(data) {
 							layer.msg('操作失败')
 						}
-
 					});
 				},
 				end: function (index, layero) {

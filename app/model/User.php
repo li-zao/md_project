@@ -6,6 +6,12 @@ use think\Model;
 class User extends Model {
 	// 主键
 	protected $pk = 'uId';
+    // 管理员
+    public const ROLE_ADMIN = 'admin';
+    
+    public const STATUS_ENABLE = 1;
+    public const STATUS_DISABLE = 0;
+    
 
 	public static function add($data) {
 		$lastInsertId = self::insertGetId($data);

@@ -5,24 +5,10 @@ namespace app\middleware;
 
 use app\Request;
 use Closure;
-use think\Response;
 use think\response\Redirect;
 
-class isLogin extends Common
+class Log extends Common
 {
-    public const IP_WHITE_LIST = [
-        '192.168.100.',
-        '192.168.32.',
-        '192.168.31.',
-        '192.168.10.',
-        '192.168.20.',
-        '192.168.30.',
-        '192.168.40.',
-        '192.168.50.',
-        '192.168.50.',
-        '127.0.0.',
-    ];
-
     /**
      * 处理请求
      * @param Request $request
@@ -36,17 +22,6 @@ class isLogin extends Common
         if (strpos($requestUrl, 'api') === 0) {
             return $next($request);
         }
-        $ipCheck = false;
-        foreach (self::IP_WHITE_LIST as $ip) {
-            if (stripos($_SERVER['REMOTE_ADDR'], $ip) !== false) {
-                $ipCheck = true;
-                break;
-            }
-        }
-        if (!$ipCheck) {
-            return Response::create('', 'html', 403);
-        }
-
         if (strpos($requestUrl, 'dialog') !== false) {
             return $next($request);
         }
@@ -55,6 +30,9 @@ class isLogin extends Common
         }
         if (!$this->checkStatus()) {
             return redirect((string)url('/index/login'));
+        }
+        if ($request->isPost()) {
+            // @TODO: insert log
         }
         return $next($request);
     }

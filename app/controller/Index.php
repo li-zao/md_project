@@ -4,25 +4,11 @@ namespace app\controller;
 use app\model\User;
 
 use app\BaseController;
-use think\Request;
 use think\facade\View;
 use think\facade\Session;
 
-class Index extends BaseController {
-	 /**
-	 * @var \think\Request Request实例
-	 */
-	protected $request;
-	
-	/**
-	 * 构造方法
-	 * @param Request $request Request对象
-	 * @access public
-	 */
-	public function __construct(Request $request) {
-		$this->request = $request;
-	}
-
+class Index extends BaseController
+{
 	public function login() {
 		return View::fetch();
 	}

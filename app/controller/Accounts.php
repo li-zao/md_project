@@ -7,24 +7,12 @@ use app\BaseController;
 use think\facade\View;
 use think\Request;
 
-class Accounts {
-	/**
-	 * @var \think\Request Request实例
-	 */
-	protected $request;
-	
-	/**
-	 * 构造方法
-	 * @param Request $request Request对象
-	 * @access public
-	 */
-	public function __construct(Request $request=null) {
-		$this->request = $request;
-	}
+class Accounts extends BaseController
+{
 
-	public function index() {
+	public function index()
+    {
 		View::assign('menu','accounts');
-		
 		return View::fetch();
 	}
 

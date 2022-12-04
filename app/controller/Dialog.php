@@ -10,6 +10,7 @@ use app\model\CommonUtil;
 use app\model\User;
 
 use app\BaseController;
+use Exception;
 use think\facade\View;
 use think\Request;
 
@@ -155,6 +156,104 @@ class Dialog {
 		return View::fetch();
 	}
 
+    /**
+     * 项目删除
+     * @return int
+     */
+    public function delProfile()
+    {
+        $pfId = $this->request->param('id');
+        if (empty($pfId)) {
+            return 1;
+        }
+        try {
+            $record = Profile::find($pfId);
+            if (empty($record)) {
+                return 1;
+            }
+            // @TODO:确认删除逻辑
+            $record->pfDisplay = $record['pfDisplay'] . '_del';
+            return (int)$record->save();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * 删除追踪
+     * @return int
+     */
+    public function delProjectList()
+    {
+        $pId = $this->request->param('id');
+        if (empty($pId)) {
+            return 1;
+        }
+        try {
+            $record = ProjectList::find($pId);
+            if (empty($record)) {
+                return 1;
+            }
+            // @TODO:确认删除逻辑
+            $record->pTitle = $record['pTitle'] . '_del';
+            return (int)$record->save();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * 删除版本
+     * @return int
+     */
+    public function delPackage()
+    {
+        $pkId = $this->request->param('id');
+        if (empty($pkId)) {
+            return 1;
+        }
+        try {
+            $record = Package::find($pkId);
+            if (empty($record)) {
+                return 1;
+            }
+            // @TODO:确认删除逻辑
+            $record->pkName = $record['pkName'] . '_del';
+            return (int)$record->save();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * @return int
+     */
+    public function delUser()
+    {
+        $role = session('role');
+        if ($role != User::ROLE_ADMIN) {
+            return 0;
+        }
+        $uid = $this->request->param('id');
+        if (empty($uid)) {
+            return 1;
+        }
+        try {
+            $record = User::find($uid);
+            if ($record->uRole == User::ROLE_ADMIN) {
+                return 0;
+            }
+            if (empty($record)) {
+                return 1;
+            }
+            // @TODO:确认删除逻辑
+            $record->uName = $record['uName'] . '_del';
+            $record->uStatus = User::STATUS_DISABLE;
+            return (int)$record->save();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
 	// 增改用户DB
 	public function updateprofile() {
 		$pfId = $this->request->param('pfId');

@@ -54,15 +54,15 @@ class Config {
 		$dbProducts = Product::select()->column('pdName', 'pdId');
 
 		$curPage = $this->request->param('page');
-		$limit = $this->request->param('limit');
+		$limit = $this->request->param('limit', 10);
 		
-		$stmt = Package::select();
+		$stmt = Package::order('pkId', 'desc')->limit(($curPage - 1) * $limit, $limit)->select();
 		$total = $stmt->count();
 		$infos = $stmt->toArray();
 
 		foreach ($infos as &$info) {
 			$pdId = $info['pdId'];
-			$info['pdDisplay'] = isset($dbProducts[$pdId]) ? $dbProducts[$pdId] : '---';
+			$info['pdDisplay'] = $dbProducts[$pdId] ?? '---';
 		}
 
 		$return['code'] = 0;

@@ -50,11 +50,16 @@
 	// 行工具栏事件
 	table.on('tool(data_table)', function(obj){
 		var data = obj.data;
-		if (data.uId != "") {
-			var uId = data.uId;
-			if(obj.event == 'edit'){
-				openDialog(uId)
-			}
+		if (!data.uId) {
+			return false;
+		}
+		switch (obj.event) {
+			case 'edit':
+				openUserDialog(data.uId);
+				break;
+			case 'del':
+				delUserDialog(data);
+				break;
 		}
 	});
 
@@ -62,14 +67,35 @@
 	table.on('toolbar(data_table)', function(obj){
 		switch(obj.event){
 			case 'create':
-				openDialog('');
+				openUserDialog('');
 				break;
-		};
+		}
 	});
 
-	function openDialog(uId) {
+	function delUserDialog(data) {
+		if (!data.uId) {
+			return false;
+		}
+		layer.confirm('确认删除：' + data.uName + '?', function (index) {
+			$.ajax({ 
+				type : "POST",
+				url : "/dialog/delUser",
+				data : {id: data.uId},
+				success : function(result) {
+					if (result) {
+						layer.close(index);
+						table.reload('data_table');
+						layer.msg('删除成功');
+					} else {
+						layer.msg('删除失败');
+					}
+				}
+			});
+		});
+	}
+	function openUserDialog(uId) {
 		let title = "创建账号"
-		if (uId != "") {
+		if (uId) {
 			title = "编辑账号"
 		}
 
@@ -85,13 +111,13 @@
 				var inputForm = $(window.frames["layui-layer-iframe" + dialogIndex].document).contents().find("#acForm");
 
 				var uName = inputForm.find('input[name=uName]').val();
-				if (uName == "") {
+				if (!uName) {
 					layer.msg('用户名不能为空');
 					return false;
 				}
 
 				var uPassword = inputForm.find('input[name=uPassword]').val();
-				if (uPassword == "") {
+				if (!uPassword) {
 					layer.msg('密码不能为空');
 					return false;
 				}
@@ -102,12 +128,11 @@
 					url:'/dialog/updateaccounts',
 					data: inputForm.serialize(),
 					success: function (result) {
-						if (result == 1) {
+						if (result) {
 							layer.msg('操作成功')
 							layer.close(dialogIndex)
 						} else {
 							layer.msg('操作失败')
-							return;
 						}
 					},
 					error: function(data) {
