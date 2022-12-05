@@ -146,6 +146,11 @@
 
 		// 头工具栏事件
 		table.on('toolbar(data_table)', function(obj){
+			switch (obj.event) {
+				case 'create':
+					openBugDetail(0);
+					break;
+			}
 		});
 		function delProjectList(data) {
 			if (!data.pId) {

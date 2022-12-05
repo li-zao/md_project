@@ -96,7 +96,7 @@
 				var title = '';
 
 				table.reload("data_table", {
-					url: '/users/list/', //数据接口
+					url: '/profile/list/', //数据接口
 					where: {
 						title: title,
 					},
@@ -116,26 +116,26 @@
 			elem: '#data_table',
 			height: '600',
 			toolbar: '#toolbar', //开启头部工具栏，并为其绑定左侧模板
-			url: '/users/list/', //数据接口
+			url: '/profile/list/', //数据接口
 			page: true, //开启分页
 			cols: [[ //表头
 				{type:'checkbox'},
 				{field: 'pfId', title: '序号', width:'5%'},
-				{field: 'pfDisplay', title: '项目名称', width:'45%'},
+				{field: 'pfDisplay', title: '项目名称', width:'75%'},
 				{fixed: 'right', title:'操作', toolbar: '#bar'}
 			]]
 		});
-
+		// 行 双击
 		table.on('rowDouble(data_table)', function(obj){
 			var pfId = obj.data.pfId
-			showPorfileSummary(pfId)
+			showProfileSummary(pfId)
 		});
 
 		// 行工具栏事件
 		table.on('tool(data_table)', function(obj){
 			console.log(obj);
 			var data = obj.data;
-			let pfId = obj.data.pfid;
+			let pfId = obj.data.pfId;
 			switch (obj.event) {
 				case 'edit':
 					openProfileDialog(pfId);
@@ -145,6 +145,16 @@
 					break;
 			}
 		});
+		
+		// 头工具栏事件
+		table.on('toolbar(data_table)', function(obj){
+			switch (obj.event) {
+				case 'create':
+					openProfileDialog(0);
+					break;
+			}
+		});
+		// 删除
 		function delProfileDialog(data) {
 			if (!data.pfId) {
 				return false;
@@ -166,11 +176,7 @@
 				});
 			});
 		}
-		// 头工具栏事件
-		table.on('toolbar(data_table)', function(obj){
-			
-		});
-
+		// 新建|修改
 		function openProfileDialog(pfId) {
 			let title = "创建项目"
 			if (!pfId) {
@@ -218,7 +224,7 @@
 			});
 		}
 
-		function showPorfileSummary(pfId) {
+		function showProfileSummary(pfId) {
 			var dialogIndex = layer.open({
 				title: '摘要',
 				skin:'to-fix-select',

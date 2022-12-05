@@ -72,8 +72,7 @@
 					<button type="button" class="layui-btn layui-btn-sm" onclick="addDevice()"><i class="layui-icon layui-icon-addition"></i></button>
 					<button type="button" class="layui-btn layui-btn-sm" onclick="delDevice()"><i class="layui-icon layui-icon-subtraction"></i></button>
 				</legend>
-				<div class="layui-field-box" id="device-content">
-					
+				<div class="layui-field-box">
 						{foreach $devices as $index => $dInfo}
 						{php}$i = $index + 1{/php}
 							<div class="layui-form-item device-list" id="origin-deivce-div-{$i}">

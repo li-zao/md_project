@@ -58,7 +58,7 @@
       			<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
       				<ul class="layui-nav layui-nav-tree"  lay-filter="test">
       					<li class="layui-nav-item" id="index"><a href="/index">首页</a></li>
-      					<li class="layui-nav-item" id="users"><a href="/users">项目管理</a></li>
+      					<li class="layui-nav-item" id="users"><a href="/profile">项目管理</a></li>
       					<li class="layui-nav-item" id="project"><a href="/project">项目跟踪</a></li>
 
       					<!-- <li class="layui-nav-item" id="projectlog">

@@ -16,13 +16,23 @@
 			}
 			.loginForm{
 				width: 350px;
-				height: 300px;
+				height: 240px;
 				background-color: white;
 				padding: 30px 20px;
 				margin-top: 50%;
 				border-radius: 5px;
 				box-shadow: 0 0 5px black;
 				box-sizing: border-box;
+			}
+			.login-form-title {
+				text-align: center;
+				margin-bottom: 15px;
+			}
+			.layui-form-label {
+				width: 50px !important;
+			}
+			.layui-input-block {
+				margin-left: 80px !important;
 			}
 		</style>
 	</head>
@@ -32,19 +42,19 @@
 			<div class="layui-row">
 				<div class="layui-col-md4 layui-col-md-offset4">
 					<div class="loginForm">
-						<h2 align="center">{$Think.config.app.app_name}</h2>
+						<h2 class="login-form-title">{$Think.config.app.app_name}</h2>
 						<form class="layui-form" id="loginForm">
 							<div class="layui-form-item">
-								<label>用户名:</label>
-								<div class="layui-form-block">
+								<label class="layui-form-label">用户名:</label>
+								<div class="layui-input-block">
 									<input type="text" name="username" required lay-verify="required"
-									placeholder="请输入用户名" class="layui-input">
+										placeholder="请输入用户名" class="layui-input">
 								</div>
 							</div>
 
 							<div class="layui-form-item">
-								<label>密码:</label>
-								<div class="layui-form-block">
+								<label class="layui-form-label">密码:</label>
+								<div class="layui-input-block">
 									<input type="password" name="password" required lay-verify="required"
 									placeholder="请输入密码" class="layui-input">
 								</div>
@@ -65,28 +75,26 @@
 		<script src="/dist/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 			layui.use(['layer', 'form'], function () {
-	            var layer = layui.layer;
-	            var form = layui.form;
+				var layer = layui.layer;
+				var form = layui.form;
 
-	            form.on('submit(loginForm)', function (data) {
-	                // submit login data
-          	    	$.ajax({ 
-        	            type : "POST",
-        	            data : $('#loginForm').serialize(),
-        	            url : "/index/dologin/",
-        	            success : function(result) {
-        	            	result = $.parseJSON(result)
-        	            	if (result.res == 1) {
-			            		window.location.href = 'index';
-			            	} else {
-			            		layer.msg(result.msg)
-			            	}
-        	            }
-        		   	});
-
-	                return false;
-	            })
-	        })
+				form.on('submit(loginForm)', function (data) {
+					// submit login data
+		  			$.ajax({ 
+						type : "POST",
+						data : $('#loginForm').serialize(),
+						url : "/index/dologin/",
+						success : function(result) {
+							if (!result.code) {
+								layer.msg(result.msg)
+								return false;
+							}
+							window.location.href = 'index';
+						}
+					});
+					return false;
+				})
+			})
 		</script>
 	</body>
 </html>

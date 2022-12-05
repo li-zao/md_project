@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app;
 
+use app\common\Common;
 use think\App;
 use think\exception\ValidateException;
 use think\Validate;
@@ -91,4 +92,24 @@ abstract class BaseController
         return $v->failException(true)->check($data);
     }
 
+    /**
+     * @param mixed $data
+     * @param int $code
+     * @param string $message
+     * @return \think\response\Json
+     */
+    public static function jsonAPI($data = [], int $code = Common::CODE_YES, string $message = '')
+    {
+        return json(['code' => $code, 'data' => $data, 'msg' => $message]);
+    }
+
+    /**
+     * @return array
+     */
+    public function pagination()
+    {
+        $page = $this->request->param('page', 1);
+        $limit = $this->request->param('limit', 10);
+        return [$page, $limit];
+    }
 }
